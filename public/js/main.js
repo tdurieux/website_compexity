@@ -9,6 +9,21 @@ let requests = []
 function getRandomColor() {
     return "#" + (Math.floor(Math.random() * 16777215).toString(16) + '000000').substring(0, 6)
 }
+function humanFileSize(bytes, si) {
+    var thresh = si ? 1000 : 1024;
+    if(Math.abs(bytes) < thresh) {
+        return bytes + ' B';
+    }
+    var units = si
+        ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
+        : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+    var u = -1;
+    do {
+        bytes /= thresh;
+        ++u;
+    } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+    return bytes.toFixed(1)+' '+units[u];
+}
 window.submit = function() {
     const url = document.getElementById("url");
     initMap();
@@ -173,7 +188,7 @@ ws.onmessage = (m) => {
                 output += (type + '\t' + statRequest[type]) + '\n'
             }
             console.log(output)
-            document.querySelector('.size .value').innerText = Math.floor(totalSize/1024/4)
+            document.querySelector('.size .value').innerText = humanFileSize(totalSize, true)
             document.querySelector('.script .value').innerText = (statRequest['script'] || 0)
         } else if (type == 'coverage') {
             let totalBytes = 0;
