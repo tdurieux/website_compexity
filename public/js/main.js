@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://localhost:3300/')
+const ws = new WebSocket('wss://castor.durieux.me')
 
 let particleMap = {}
 let requestMap = {}
