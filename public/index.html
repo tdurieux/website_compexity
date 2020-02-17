@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>WebSite Statistics</title>
+    <style>
+        * {
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+        body, html {
+            padding: 0;
+            margin: 0;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #fdfdfd;
+            background-color: #242423;
+        }
+        #screen {
+            width: 100%;
+            margin: auto;
+        }
+        #map{
+            width: 100%;
+        }
+        #visualization{
+            position: fixed;
+        }
+        .urlBar { 
+            background-color: rgb(65, 65, 65);
+            position: relative;
+            width: 100%;
+            padding: 10px;
+            margin: 0;
+            z-index: 10;
+        }
+        #url {
+            background-color: #333;
+            border: none;
+            color: white;
+            width: 80%;
+            margin-left: 10%;
+            border-radius: 5px;
+            padding: 7px;
+            font-size: 13px;            
+        }
+        .screen-wrapper {
+            left:30%;
+            width: 40%;
+            height: 50%;
+            overflow: hidden;
+            position: absolute;
+        } 
+        .stats {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            height: 100%;
+            width: 30%;
+            overflow: hidden;
+            padding: 57px 7px;
+        }
+        .stats.left {
+            left: 0;
+        }
+        .stats.right {
+            right: 0;
+        }
+        .stat {
+            position: relative;
+            width: 100%;
+            height: 25%;
+            background: white;
+            border-radius: 2px;
+            color: #444444;
+            padding: 7px;
+            margin: 10px 0;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+        .stat .bg {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 0;
+        }
+        .stat .bg-overlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            background-color: rgba(255,255,255, 0.2);
+        }
+        .stat .title {
+            position: relative;
+            font-size: 25px;
+            font-weight: 900;
+            z-index: 10;
+            text-align: center;
+            line-height: 100px;
+        }
+        .stat .content {
+            position: relative;
+            z-index: 1;
+        }
+        /* .stat.nbCountry {
+            height: 175px;
+        } */
+        #profile {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(50% - 50px);
+        }
+    </style>
+    <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/p5@0.10.2/lib/p5.min.js"></script>
+    <script language="javascript" src="https://cdn.jsdelivr.net/npm/p5@0.10.2/lib/addons/p5.sound.min.js"></script>
+
+    <script language="javascript" type="text/javascript" src="js/profile.v4.js"></script>
+    <script language="javascript" type="text/javascript" src="js/sigma.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/sigma.layout.forceAtlas2.min.js"></script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7cXFeELzEMQ1cUlfGf3YwoOdOF-4Z2e0&callback=initMap"></script>
+    <script src="js/main.js"></script>
+    <script language="javascript" type="text/javascript" src="js/sketch.js"></script>
+    <script language="javascript" type="text/javascript" src="js/particle.js"></script>
+</head>
+<body>
+    <div class="urlBar">
+        <form onsubmit="window.submit();return false;">
+            <input type="url" name="url" id="url" placeholder="URL..." value="https://www.kth.se/blogs/rektor/2020/01/om-konsten-att-vaga-valja/" onfocus="this.select();" onmouseup="return false;">
+        </form>
+    </div>
+    <div class="stats left">
+        <div class="stat script">
+            <div class="title">
+                <span class="value"></span> Script
+            </div>
+            <div class="content"></div>
+        </div>
+        <div class="stat size">
+            <div class="title">
+                <span class="value"></span> MB
+            </div>
+            <div class="content"></div>
+        </div>
+    </div>
+    <div class="screen-wrapper">
+        <img id="screen"/>
+    </div>
+    <div class="stats right">
+        <div class="stat nbRequest">
+            <div class="title">
+                <span class="value"></span> requests
+            </div>
+            <div class="bg" id="requests">
+            </div>
+            <div class="bg-overlay"></div>
+            <div class="content"></div>
+        </div>
+        <div class="stat nbCountry">
+            <div class="title">
+                <span class="value"></span> countries
+            </div>
+            <div class="bg" id="map">
+            </div>
+            <div class="bg-overlay"></div>
+            <div class="content"></div>
+        </div>
+    </div>
+    <div id="profile"></div>
+    <div id="scripts"></div>
+<script src="https://nagix.github.io/nk-missile-tests/js/three-r87.min.js"></script>
+<script src="https://nagix.github.io/nk-missile-tests/js/THREEx.KeyboardState.js"></script>
+<script src="https://nagix.github.io/nk-missile-tests/js/THREEx.WindowResize.js"></script>
+<!-- <script src="js/globe.js"></script> -->
+<script>
+function initMap() {
+  window.map = map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: 60, lng: 0},
+                    zoom: 3,
+                    styles: [
+    {
+        "featureType": "all",
+        "elementType": "labels.text",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "all",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#0096aa"
+            },
+            {
+                "weight": "0.30"
+            },
+            {
+                "saturation": "-75"
+            },
+            {
+                "lightness": "5"
+            },
+            {
+                "gamma": "1"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "color": "#0096aa"
+            },
+            {
+                "saturation": "-75"
+            },
+            {
+                "lightness": "5"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "labels.text.stroke",
+        "stylers": [
+            {
+                "color": "#ffe146"
+            },
+            {
+                "visibility": "on"
+            },
+            {
+                "weight": "6"
+            },
+            {
+                "saturation": "-28"
+            },
+            {
+                "lightness": "0"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#e6007e"
+            },
+            {
+                "weight": "1"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative.country",
+        "elementType": "labels",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative.province",
+        "elementType": "labels",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative.locality",
+        "elementType": "labels",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative.neighborhood",
+        "elementType": "labels",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "administrative.land_parcel",
+        "elementType": "labels",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "all",
+        "stylers": [
+            {
+                "color": "#ffe146"
+            },
+            {
+                "saturation": "-28"
+            },
+            {
+                "lightness": "0"
+            },
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.natural",
+        "elementType": "all",
+        "stylers": [
+            {
+                "visibility": "on"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.natural.landcover",
+        "elementType": "labels.text",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape.natural.terrain",
+        "elementType": "labels.text",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "all",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "labels.text",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "all",
+        "stylers": [
+            {
+                "visibility": "off"
+            },
+            {
+                "saturation": "-75"
+            },
+            {
+                "lightness": "5"
+            },
+            {
+                "gamma": "1"
+            },
+            {
+                "color": "#aa0000"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "labels.text",
+        "stylers": [
+            {
+                "visibility": "off"
+            },
+            {
+                "color": "#ffe146"
+            },
+            {
+                "weight": 8
+            },
+            {
+                "saturation": "-28"
+            },
+            {
+                "lightness": "0"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "labels.text.fill",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#0096aa"
+            },
+            {
+                "weight": 8
+            },
+            {
+                "lightness": "5"
+            },
+            {
+                "gamma": "1"
+            },
+            {
+                "saturation": "-75"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "all",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road.highway.controlled_access",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "road.arterial",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "elementType": "all",
+        "stylers": [
+            {
+                "visibility": "simplified"
+            },
+            {
+                "color": "#0096aa"
+            },
+            {
+                "saturation": "-75"
+            },
+            {
+                "lightness": "5"
+            },
+            {
+                "gamma": "1"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#0096aa"
+            },
+            {
+                "saturation": "-75"
+            },
+            {
+                "lightness": "5"
+            },
+            {
+                "gamma": "1"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "labels.text",
+        "stylers": [
+            {
+                "visibility": "off"
+            },
+            {
+                "color": "#ffe146"
+            },
+            {
+                "saturation": "-28"
+            },
+            {
+                "lightness": "0"
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "labels.icon",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    }
+]
+                });
+
+}
+document.body.onload = () => {
+    submit()
+}
+initMap()
+</script> 
+</section>
+</body>
+</html>

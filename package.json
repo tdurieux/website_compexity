@@ -1,0 +1,19 @@
+{
+  "name": "kth_boss_presentation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "binpackingjs": "^2.3.2",
+    "domain-digger": "0.0.3",
+    "express": "^4.17.1",
+    "geo-from-ip": "^2.0.0",
+    "puppeteer": "^2.1.1",
+    "ws": "^7.2.1"
+  }
+}
