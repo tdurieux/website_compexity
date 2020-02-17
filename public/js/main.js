@@ -7,7 +7,7 @@ let coverageMap = {}
 let requests = []
 
 function getRandomColor() {
-    return "#" + (Math.floor(Math.random() * 16777215).toString(16) + '000000')
+    return "#" + (Math.floor(Math.random() * 16777215).toString(16) + '000000').substring(0, 6)
 }
 window.submit = function() {
     const url = document.getElementById("url");
@@ -145,24 +145,22 @@ ws.onmessage = (m) => {
                     lng: trace.geoip.location.longitude,
                 })
             }
+
+            console.log(getRandomColor())
             var flightPath = new google.maps.Polyline({
                 path: flightPlanCoordinates,
                 geodesic: true,
                 strokeColor: getRandomColor(),
                 strokeOpacity: 1.0,
-                strokeWeight: 2
+                strokeWeight: 3
             });
 
             flightPath.setMap(map);
             document.querySelector('.nbCountry .value').innerText = Object.keys(statCountries).length
-            let output = ''
-            for (let type in statCountries) {
-                output += (type + '\t' + statCountries[type]) + '\n'
-            }
-            console.log(output)
         } else if (type == 'request') {
             document.querySelector('.nbRequest .value').innerText = (parseInt(document.querySelector('.nbRequest .value').innerText) || 0) + 1
         } else if (type == 'requestEnd') {
+            console.log(data.url, data.length)
             requestMap[data.url] = data;
             requests.push(data);
             totalSize += data.length
@@ -175,11 +173,9 @@ ws.onmessage = (m) => {
                 output += (type + '\t' + statRequest[type]) + '\n'
             }
             console.log(output)
-            document.querySelector('.size .value').innerText = Math.floor(totalSize/1024)
+            document.querySelector('.size .value').innerText = Math.floor(totalSize/1024/4)
             document.querySelector('.script .value').innerText = (statRequest['script'] || 0)
         } else if (type == 'coverage') {
-            const scripts = document.getElementById('scripts')
-
             let totalBytes = 0;
             let usedBytes = 0;
             for (const entry of data) {
@@ -197,8 +193,29 @@ ws.onmessage = (m) => {
                 s.innerHTML = entry.url + ' ' + entry.text.length + ' ' + (lUsedBytes);
                 // scripts.appendChild(s);
             }
-            document.querySelector('.script .content').innerText = `Bytes used: ${usedBytes / totalBytes * 100}%`
 
+            var config = {
+                type: 'pie',
+                data: {
+                    datasets: [{
+                        data: [
+                            usedBytes / totalBytes * 100,
+                            (1 - (usedBytes / totalBytes)) * 100
+                        ],
+                        backgroundColor: [
+                            "red",
+                            "green"
+                        ],
+                        label: 'Coverage'
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            };
+            document.getElementById('coveragePie').height = document.getElementById('coveragePie').parentNode.clientHeight
+            var ctx = document.getElementById('coveragePie').getContext('2d');
+            window.myPie = new Chart(ctx, config);
         }
     }
 }

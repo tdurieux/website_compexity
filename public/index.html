@@ -120,6 +120,11 @@
             right: 0;
             height: calc(50% - 50px);
         }
+        #coveragePie {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
     </style>
     <script language="javascript" type="text/javascript" src="https://cdn.jsdelivr.net/npm/p5@0.10.2/lib/p5.min.js"></script>
     <script language="javascript" src="https://cdn.jsdelivr.net/npm/p5@0.10.2/lib/addons/p5.sound.min.js"></script>
@@ -142,13 +147,17 @@
     <div class="stats left">
         <div class="stat script">
             <div class="title">
-                <span class="value"></span> Script
+                <span class="value">0</span> Scripts
             </div>
+            <div class="bg">
+                <canvas  id="coveragePie"></canvas>
+            </div>
+            <div class="bg-overlay"></div>
             <div class="content"></div>
         </div>
         <div class="stat size">
             <div class="title">
-                <span class="value"></span> MB
+                <span class="value">0</span> MB
             </div>
             <div class="content"></div>
         </div>
@@ -159,7 +168,7 @@
     <div class="stats right">
         <div class="stat nbRequest">
             <div class="title">
-                <span class="value"></span> requests
+                <span class="value">0</span> Requests
             </div>
             <div class="bg" id="requests">
             </div>
@@ -168,7 +177,7 @@
         </div>
         <div class="stat nbCountry">
             <div class="title">
-                <span class="value"></span> countries
+                <span class="value">0</span> Countries
             </div>
             <div class="bg" id="map">
             </div>
@@ -181,12 +190,13 @@
 <script src="https://nagix.github.io/nk-missile-tests/js/three-r87.min.js"></script>
 <script src="https://nagix.github.io/nk-missile-tests/js/THREEx.KeyboardState.js"></script>
 <script src="https://nagix.github.io/nk-missile-tests/js/THREEx.WindowResize.js"></script>
+<script src="https://www.chartjs.org/dist/2.9.3/Chart.min.js"></script>
 <!-- <script src="js/globe.js"></script> -->
 <script>
 function initMap() {
   window.map = map = new google.maps.Map(document.getElementById('map'), {
-                    center: {lat: 60, lng: 0},
-                    zoom: 3,
+                    center: {lat: 53, lng: -40},
+                    zoom: 2,
                     styles: [
     {
         "featureType": "all",
@@ -601,9 +611,8 @@ function initMap() {
 
 }
 document.body.onload = () => {
-    submit()
+    setTimeout(submit, 100)
 }
-initMap()
 </script> 
 </section>
 </body>

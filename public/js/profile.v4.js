@@ -98,5 +98,5 @@ function profile(container, profile) {
     setTimeout(() => {
         s.startForceAtlas2();
         window.setTimeout(function() {s.killForceAtlas2()}, 60000);
-    }, 100)
+    }, 1000)
 }

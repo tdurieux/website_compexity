@@ -19,10 +19,9 @@ async function getTraceRoute(opts) {
   await client.send("Network.enable");
 
   client.on('Network.requestWillBeSent', (event) => {
-    console.log(event.requestId, event.initiator);
+    // console.log(event.requestId, event.initiator);
   })
   client.on("Network.responseReceived", event => {
-    console.log(event.initiator);
     devToolsResponses.set(event.requestId, event.response);
   });
 
@@ -37,7 +36,7 @@ async function getTraceRoute(opts) {
     if (!response.headers['content-length']) {
       return;
     }
-    const encodedBodyLength = event.encodedDataLength - response.headers['content-length'];
+    const encodedBodyLength = event.encodedDataLength //- response.headers['content-length'];
     // console.log(`${encodedBodyLength} bytes for ${response.url}`);
     opts.onRequestEnd({url: response.url, type: response.mimeType, length: encodedBodyLength})
   });
@@ -112,12 +111,12 @@ async function getTraceRoute(opts) {
   await page.goto(opts.url);
   console.log(await page.metrics())
   opts.onProfile(JSON.parse((await page.tracing.stop()).toString('utf8')).traceEvents.filter(action => action.args.data && action.args.data.cpuProfile && action.args.data.cpuProfile.nodes));
-  const [jsCoverage, cssCoverage] = await Promise.all([
+  const [jsCoverage] = await Promise.all([
     page.coverage.stopJSCoverage(),
     // page.coverage.stopCSSCoverage(),
   ]);
   
-  const coverage = [...jsCoverage, ...cssCoverage];
+  const coverage = [...jsCoverage];
   opts.onCoverage(coverage)
 };
 
