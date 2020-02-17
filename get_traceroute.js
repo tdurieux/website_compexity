@@ -10,7 +10,7 @@ async function getTraceRoute(opts) {
   if (browser) {
     await browser.close();
   }
-  browser = await puppeteer.launch({headless: true, slowMo: 0, args: ['--start-maximized']});
+  browser = await puppeteer.launch({headless: true, slowMo: 0, args: ['--start-maximized', '--no-sandbox', '--disable-setuid-sandbox']});
   const page = await browser.newPage();
 
   const devToolsResponses = new Map();
