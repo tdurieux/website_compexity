@@ -1,5 +1,5 @@
 let protocol = "ws"
-if (document.location.protocol == 'https') {
+if (document.location.protocol == 'https:') {
     protocol += 's'
 }
 let host = document.location.hostname
@@ -34,6 +34,7 @@ function humanFileSize(bytes, si) {
 }
 window.submit = function() {
     const url = document.getElementById("url");
+    document.getElementById("profile").innerHTML = '';
     // initMap();
     requests = []
     requestMap = {}
