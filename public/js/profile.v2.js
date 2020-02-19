@@ -14,7 +14,7 @@ function getRandomColor() {
 }
 
 $(document).ready(() => {
-    $.get('Profile.json', profile => {
+    $.get('Profile2.json', profile => {
         let count = 0
         const names = new Set()
         for (let action of profile) {
@@ -60,7 +60,8 @@ $(document).ready(() => {
                 maxNodeSize: 20,
                 minNodeSize: 3,
                 zoomingRatio: 1,
-                enableCamera: false
+                enableCamera: false,
+                labelThreshold: 1000
             }
         });
         for (let nodeID in callTree) {
@@ -107,11 +108,18 @@ $(document).ready(() => {
         s.configForceAtlas2({
             // linLogMode: true,
             // adjustSizes: true,
-            scalingRatio: 1,
+            scalingRatio: 150,
+            slowDown: 50,
             gravity: 0
         });
-        s.startForceAtlas2();
-        window.setTimeout(function() {s.killForceAtlas2()}, 25000);
+        document.body.onclick = () => {
+            console.log("stop")
+            s.killForceAtlas2()
+        }
+        setTimeout(() => {
+            s.startForceAtlas2();
+            window.setTimeout(function() {s.killForceAtlas2()}, 25000);
+        }, 1000)
     })
 })
 console.log(nbCall)

@@ -1,4 +1,12 @@
-const ws = new WebSocket('wss://castor.durieux.me')
+let protocol = "ws"
+if (document.location.protocol == 'https') {
+    protocol += 's'
+}
+let host = document.location.hostname
+if (document.location.port) {
+    host += ":" + document.location.port
+}
+const ws = new WebSocket(protocol + '://' + host)
 
 let particleMap = {}
 let requestMap = {}
@@ -26,9 +34,7 @@ function humanFileSize(bytes, si) {
 }
 window.submit = function() {
     const url = document.getElementById("url");
-    initMap();
-    const scripts = document.getElementById('scripts')
-    scripts.innerHTML = ''
+    // initMap();
     requests = []
     requestMap = {}
     traceMap = {}
@@ -38,7 +44,7 @@ window.submit = function() {
     totalSize = 0
     statRequest = {}
     statCountries = {}
-    document.querySelector('.nbRequest .value').innerText = 0
+    // document.querySelector('.nbRequest .value').innerText = 0
     ws.send(url.value);
     return false;
 }
@@ -147,90 +153,91 @@ ws.onmessage = (m) => {
 
         if (type == 'profile') {
             profile(document.getElementById('profile'), data)
-        } else if (type == 'screenshot') {
-            const screen = document.getElementById('screen')
-            screen.src = "data:image/jpeg;base64," + data;
-        } else if (type == 'trace') {
-            traceMap[data.url] = data;
-            const flightPlanCoordinates = [];
-            for (let trace of data.trace) {
-                statCountries[trace.geoip.country] = (statCountries[trace.geoip.country] || 0) + 1
-                flightPlanCoordinates.push({
-                    lat: trace.geoip.location.latitude,
-                    lng: trace.geoip.location.longitude,
-                })
-            }
+        } 
+        // else if (type == 'screenshot') {
+        //     const screen = document.getElementById('screen')
+        //     screen.src = "data:image/jpeg;base64," + data;
+        // } else if (type == 'trace') {
+        //     traceMap[data.url] = data;
+        //     const flightPlanCoordinates = [];
+        //     for (let trace of data.trace) {
+        //         statCountries[trace.geoip.country] = (statCountries[trace.geoip.country] || 0) + 1
+        //         flightPlanCoordinates.push({
+        //             lat: trace.geoip.location.latitude,
+        //             lng: trace.geoip.location.longitude,
+        //         })
+        //     }
 
-            console.log(getRandomColor())
-            var flightPath = new google.maps.Polyline({
-                path: flightPlanCoordinates,
-                geodesic: true,
-                strokeColor: getRandomColor(),
-                strokeOpacity: 1.0,
-                strokeWeight: 3
-            });
+        //     console.log(getRandomColor())
+        //     var flightPath = new google.maps.Polyline({
+        //         path: flightPlanCoordinates,
+        //         geodesic: true,
+        //         strokeColor: getRandomColor(),
+        //         strokeOpacity: 1.0,
+        //         strokeWeight: 3
+        //     });
 
-            flightPath.setMap(map);
-            document.querySelector('.nbCountry .value').innerText = Object.keys(statCountries).length
-        } else if (type == 'request') {
-            document.querySelector('.nbRequest .value').innerText = (parseInt(document.querySelector('.nbRequest .value').innerText) || 0) + 1
-        } else if (type == 'requestEnd') {
-            console.log(data.url, data.length)
-            requestMap[data.url] = data;
-            requests.push(data);
-            totalSize += data.length
-            const particle = new Particle(colorType(getRequestType(data)), data.length);
-            particleMap[data.url] = particle;
-            particles.push(particle);
-            statRequest[getRequestType(data)] = (statRequest[getRequestType(data)]||0) + 1
-            let output = ''
-            for (let type in statRequest) {
-                output += (type + '\t' + statRequest[type]) + '\n'
-            }
-            console.log(output)
-            document.querySelector('.size .value').innerText = humanFileSize(totalSize, true)
-            document.querySelector('.script .value').innerText = (statRequest['script'] || 0)
-        } else if (type == 'coverage') {
-            let totalBytes = 0;
-            let usedBytes = 0;
-            for (const entry of data) {
-                coverageMap[entry.url] = entry;
-                totalBytes += entry.text.length;
-                let lUsedBytes = 0
-                for (const range of entry.ranges) {
-                    lUsedBytes += range.end - range.start - 1;
-                }
-                if (particleMap[entry.url]) {
-                    particleMap[entry.url].coverage = lUsedBytes/entry.text.length;
-                }
-                usedBytes += lUsedBytes
-                const s = document.createElement('div');
-                s.innerHTML = entry.url + ' ' + entry.text.length + ' ' + (lUsedBytes);
-                // scripts.appendChild(s);
-            }
+        //     flightPath.setMap(map);
+        //     document.querySelector('.nbCountry .value').innerText = Object.keys(statCountries).length
+        // } else if (type == 'request') {
+        //     document.querySelector('.nbRequest .value').innerText = (parseInt(document.querySelector('.nbRequest .value').innerText) || 0) + 1
+        // } else if (type == 'requestEnd') {
+        //     console.log(data.url, data.length)
+        //     requestMap[data.url] = data;
+        //     requests.push(data);
+        //     totalSize += data.length
+        //     const particle = new Particle(colorType(getRequestType(data)), data.length);
+        //     particleMap[data.url] = particle;
+        //     particles.push(particle);
+        //     statRequest[getRequestType(data)] = (statRequest[getRequestType(data)]||0) + 1
+        //     let output = ''
+        //     for (let type in statRequest) {
+        //         output += (type + '\t' + statRequest[type]) + '\n'
+        //     }
+        //     console.log(output)
+        //     document.querySelector('.size .value').innerText = humanFileSize(totalSize, true)
+        //     document.querySelector('.script .value').innerText = (statRequest['script'] || 0)
+        // } else if (type == 'coverage') {
+        //     let totalBytes = 0;
+        //     let usedBytes = 0;
+        //     for (const entry of data) {
+        //         coverageMap[entry.url] = entry;
+        //         totalBytes += entry.text.length;
+        //         let lUsedBytes = 0
+        //         for (const range of entry.ranges) {
+        //             lUsedBytes += range.end - range.start - 1;
+        //         }
+        //         if (particleMap[entry.url]) {
+        //             particleMap[entry.url].coverage = lUsedBytes/entry.text.length;
+        //         }
+        //         usedBytes += lUsedBytes
+        //         const s = document.createElement('div');
+        //         s.innerHTML = entry.url + ' ' + entry.text.length + ' ' + (lUsedBytes);
+        //         // scripts.appendChild(s);
+        //     }
 
-            var config = {
-                type: 'pie',
-                data: {
-                    datasets: [{
-                        data: [
-                            usedBytes / totalBytes * 100,
-                            (1 - (usedBytes / totalBytes)) * 100
-                        ],
-                        backgroundColor: [
-                            "red",
-                            "green"
-                        ],
-                        label: 'Coverage'
-                    }]
-                },
-                options: {
-                    responsive: true
-                }
-            };
-            document.getElementById('coveragePie').height = document.getElementById('coveragePie').parentNode.clientHeight
-            var ctx = document.getElementById('coveragePie').getContext('2d');
-            window.myPie = new Chart(ctx, config);
-        }
+        //     var config = {
+        //         type: 'pie',
+        //         data: {
+        //             datasets: [{
+        //                 data: [
+        //                     usedBytes / totalBytes * 100,
+        //                     (1 - (usedBytes / totalBytes)) * 100
+        //                 ],
+        //                 backgroundColor: [
+        //                     "red",
+        //                     "green"
+        //                 ],
+        //                 label: 'Coverage'
+        //             }]
+        //         },
+        //         options: {
+        //             responsive: true
+        //         }
+        //     };
+        //     document.getElementById('coveragePie').height = document.getElementById('coveragePie').parentNode.clientHeight
+        //     var ctx = document.getElementById('coveragePie').getContext('2d');
+        //     window.myPie = new Chart(ctx, config);
+        // }
     }
 }
