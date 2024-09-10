@@ -11,7 +11,7 @@
   "dependencies": {
     "binpackingjs": "^2.3.2",
     "domain-digger": "0.0.3",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "geo-from-ip": "^2.0.0",
     "puppeteer": "^2.1.1",
     "ws": "^7.4.6"
